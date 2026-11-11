@@ -11,8 +11,26 @@
     ],
   },
   "files": [
-    { "kind": "folder", "path": "BREAD", "target-membership": [ "BREAD" ] },
     {
+      "kind": "folder",
+      "path": "BREAD",
+      "target-membership": [
+        "BREAD",
+      ],
+      "membership-exceptions": [
+        {
+          "target": "BREAD",
+          "exclusions": [
+            "InputView4.swift",
+          ],
+        }, {
+          "build-phase": "BREAD/resources",
+          "inclusions": [
+            "InputView4.swift",
+          ],
+        },
+      ],
+    }, {
       "kind": "group",
       "name": "Products",
       "children": [
