@@ -11,10 +11,8 @@ struct SelectView2: View {
     
     var body: some View {
         VStack {
-            // Top bar: "<-" on the left, "+" on the right
             HStack {
                 Button {
-                    // TODO: go back
                 } label: {
                     Image(systemName: "arrow.left")
                         .font(.title3.bold())
@@ -23,7 +21,6 @@ struct SelectView2: View {
                 Spacer()
                 
                 Button {
-                    // TODO: add new
                 } label: {
                     Image(systemName: "plus")
                         .font(.title3.bold())
@@ -38,13 +35,11 @@ struct SelectView2: View {
             .padding(.top)
             
             Spacer()
-            
-            // Placeholder selection: replace with your real selection UI.
-            // Tapping it marks a selection as made, which enables START.
+        
             Button {
                 hasSelected = true
             } label: {
-                Text(hasSelected ? "Selected ✓" : "Tap to select a bread")
+                Text(hasSelected ? "Selected ✓" : "PEPPA PIG")
                     .padding()
                     .frame(maxWidth: .infinity)
                     .background(Color(.systemGray6))
@@ -53,10 +48,7 @@ struct SelectView2: View {
             .padding()
             
             Spacer()
-            
-            // START: grey and disabled until hasSelected is true
             Button {
-                // TODO: start
             } label: {
                 Text("START")
                     .font(.title2.bold())
