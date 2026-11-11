@@ -1,18 +1,14 @@
-//
-//  SelectView2.swift
-//  BREAD
-//
-//  Created by T Krobot on 11/11/26.
-//
 import SwiftUI
 
 struct SelectView2: View {
     @State private var hasSelected = false
+    @State private var showChooseView3 = false
     
     var body: some View {
         VStack {
             HStack {
                 Button {
+                    // TODO: go back
                 } label: {
                     Image(systemName: "arrow.left")
                         .font(.title3.bold())
@@ -21,21 +17,19 @@ struct SelectView2: View {
                 Spacer()
                 
                 Button {
+                    showChooseView3 = true
                 } label: {
                     Image(systemName: "plus")
                         .font(.title3.bold())
                         .frame(width: 44, height: 44)
-                        .overlay {
-                            Circle()
-                                .strokeBorder(Color.primary, lineWidth: 3)
-                        }
+                        .contentShape(Rectangle())
                 }
             }
             .padding(.horizontal)
             .padding(.top)
             
             Spacer()
-        
+            
             Button {
                 hasSelected = true
             } label: {
@@ -48,7 +42,9 @@ struct SelectView2: View {
             .padding()
             
             Spacer()
+            
             Button {
+                // TODO: start action
             } label: {
                 Text("START")
                     .font(.title2.bold())
@@ -64,11 +60,12 @@ struct SelectView2: View {
             .disabled(!hasSelected)
             .padding()
         }
+        .fullScreenCover(isPresented: $showChooseView3) {
+            ChooseView3()
+        }
     }
 }
 
 #Preview {
     SelectView2()
 }
-
-
