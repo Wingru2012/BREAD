@@ -16,14 +16,12 @@ struct UpdateView7: View {
     @State private var bitesTaken = 0
     @State private var isChomping = false
     @State private var hasGulped = false
-    @State private var isEating = false
-
     var sandwichLeft: CGFloat {
         CGFloat(totalBites - bitesTaken) / CGFloat(totalBites)
     }
 
     var body: some View {
-        VStack(spacing: 60) {
+        VStack {
             HStack {
                 Text("🥔")
                     .font(.system(size: potatoSize))
@@ -32,7 +30,7 @@ struct UpdateView7: View {
                                  anchor: .bottom)
                     .scaleEffect(hasGulped ? 1.15 : 1)
                     .offset(x: isChomping ? 14 : 0)
-
+                
                 Text("🥪")
                     .font(.system(size: sandwichSize))
                     .mask {
@@ -41,28 +39,16 @@ struct UpdateView7: View {
                     }
                     .offset(x: -16 * CGFloat(bitesTaken))
             }
-
-            Button("FEED!") {
-                feedThePotato()
-            }
-            .font(.title2.bold())
-            .buttonStyle(.borderedProminent)
-            .tint(.orange)
-            .disabled(isEating)
+            Text("Days")
+                .font(.largeTitle)
+        }
+        .onAppear {
+            
+            feedThePotato()
         }
     }
 
     func feedThePotato() {
-        if bitesTaken >= totalBites {
-            withAnimation(.spring(response: 0.4, dampingFraction: 0.6)) {
-                bitesTaken = 0
-                hasGulped = false
-            }
-            return
-        }
-
-        isEating = true
-
         Task {
             for _ in 0..<(totalBites - bitesTaken) {
                 withAnimation(.easeIn(duration: 0.15)) { isChomping = true }
@@ -77,8 +63,6 @@ struct UpdateView7: View {
             withAnimation(.interpolatingSpring(stiffness: 120, damping: 6)) {
                 hasGulped = true
             }
-
-            isEating = false
         }
     }
 }
