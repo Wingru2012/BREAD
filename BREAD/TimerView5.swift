@@ -27,10 +27,21 @@ struct TimerView5: View {
 
     // PlatingView6 uses 100; scaled down here so the buttons still fit
     let emojiSize: CGFloat = 80
+    /// Vertical gap between stacked ingredients — small enough that each one
+    /// covers part of the ingredient below without hiding it completely
+    let stackSpacing: CGFloat = 14
+    /// How far each bread layer is pushed down to overlap the one below
+    let breadOverlap: CGFloat = 140
+    /// How far the bottom bread drops onto the plate so they overlap
+    let breadPlateOverlap: CGFloat = 30
+    /// How far up ingredients land so they sit on top of the bread
+    let ingredientBaseOffset: CGFloat = 25
 
     @State private var selectedID: UUID
     /// One countdown per ingredient, so tabs keep their own time
     @State private var timers: [UUID: IngredientTimer] = [:]
+    /// Order in which finished ingredients landed on the sandwich
+    @State private var droppedOrder: [UUID] = []
     /// Whether the ingredient tab strip is unfolded
     @State private var isTabsExpanded = true
     // Pushes PlatingView6 once the timer is marked complete
@@ -120,27 +131,29 @@ struct TimerView5: View {
                                 .stroke(Color.brown, lineWidth: 4)
                         )
 
-                        // Bread stack from PlatingView6, with the selected
-                        // ingredient falling onto the plate at zero
+                        // Bread stack from PlatingView6 — finished ingredients
+                        // drop onto the plate and stack up
                         VStack(spacing: 0) {
-                            Text("🍞")
-                                .font(.system(size: emojiSize))
-                                .rotationEffect(.degrees(270))
 
-                            Text("🥗")
-                                .font(.system(size: emojiSize))
+                            Image("bread up")
+                                .resizable()
+                                .offset(y: breadOverlap)
+                                .zIndex(1)
 
-                            Text("🍞")
-                                .font(.system(size: emojiSize))
-                                .rotationEffect(.degrees(90))
-
-                            Text("🍽️")
-                                .font(.system(size: emojiSize))
+                            Image("plate")
+                                .resizable()
+                                .scaledToFit()
+                                .zIndex(0)
                         }
                         .frame(maxWidth: .infinity)
                         .overlay(alignment: .bottom) {
-                            droppedIngredient
-                                .offset(y: selectedState.dropOffset)
+                            // Every finished ingredient lands here, stacked
+                            ZStack {
+                                ForEach(droppedIngredients) { ingredient in
+                                    ingredientView(for: ingredient)
+                                        .offset(y: totalDropOffset(for: ingredient))
+                                }
+                            }
                         }
 
                         VStack(spacing: 14) {
@@ -246,12 +259,13 @@ struct TimerView5: View {
 
     // MARK: - Timers
 
-    private var selectedIngredient: PlanIngredient? {
-        ingredients.first { $0.id == selectedID } ?? ingredients.first
-    }
-
     private var selectedState: IngredientTimer {
         state(for: selectedID)
+    }
+
+    /// Ingredients whose timers have run out, in the order they landed
+    private var droppedIngredients: [PlanIngredient] {
+        droppedOrder.compactMap { id in ingredients.first { $0.id == id } }
     }
 
     private var anyTimerRunning: Bool {
@@ -293,6 +307,8 @@ struct TimerView5: View {
             state.dropOffset = -600
             state.isRunning = true
         }
+        // No longer sitting on the sandwich
+        droppedOrder.removeAll { $0 == selectedID }
     }
 
     private func select(_ id: UUID) {
@@ -305,6 +321,8 @@ struct TimerView5: View {
     }
 
     private func tick() {
+        var finished: [UUID] = []
+
         for ingredient in ingredients {
             var state = state(for: ingredient.id)
             guard state.isRunning, state.remaining > 0 else { continue }
@@ -314,19 +332,21 @@ struct TimerView5: View {
             if state.remaining == 0 {
                 state.isRunning = false
                 state.hasDropped = true
-                // Only the visible tab animates; the rest just land
-                if ingredient.id != selectedID {
-                    state.dropOffset = 0
-                }
+                finished.append(ingredient.id)
             }
 
             timers[ingredient.id] = state
         }
 
-        // Let the visible ingredient drop the moment its own timer hits zero
-        if let state = timers[selectedID], state.hasDropped, state.dropOffset != 0 {
-            withAnimation(.interpolatingSpring(stiffness: 45, damping: 11)) {
-                timers[selectedID]?.dropOffset = 0
+        guard !finished.isEmpty else { return }
+
+        // Remember the landing order for stacking, then drop every finished
+        // ingredient onto the sandwich — including ones on other tabs
+        droppedOrder.append(contentsOf: finished)
+
+        withAnimation(.interpolatingSpring(stiffness: 45, damping: 11)) {
+            for id in finished {
+                timers[id]?.dropOffset = 0
             }
         }
     }
@@ -360,20 +380,30 @@ struct TimerView5: View {
         return "\(minutes):" + (seconds < 10 ? "0\(seconds)" : "\(seconds)")
     }
 
-    // The selected topping, using its asset image where there is one
+    /// Where a dropped ingredient sits in the stack: each one a little
+    /// higher than the last, so they overlap but stay partly visible
+    private func stackOffset(for ingredient: PlanIngredient) -> CGFloat {
+        guard let index = droppedOrder.firstIndex(of: ingredient.id) else { return 0 }
+        return -CGFloat(index) * stackSpacing
+    }
+
+    /// Drop animation (from above) plus the ingredient's stacking position
+    private func totalDropOffset(for ingredient: PlanIngredient) -> CGFloat {
+        (timers[ingredient.id]?.dropOffset ?? 0) + stackOffset(for: ingredient) - ingredientBaseOffset
+    }
+
+    /// One ingredient's artwork, using the "s" plating asset where there is one
     @ViewBuilder
-    private var droppedIngredient: some View {
-        if let ingredient = selectedIngredient {
-            if let assetName = dropAssetName(for: ingredient.topping) {
-                Image(assetName)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 70, height: 70)
-                    .rotationEffect(.degrees(ingredient.topping.rotated ? 90 : 0))
-            } else if let icon = ingredient.topping.icon {
-                Text(icon)
-                    .font(.system(size: 60))
-            }
+    private func ingredientView(for ingredient: PlanIngredient) -> some View {
+        if let assetName = dropAssetName(for: ingredient.topping) {
+            Image(assetName)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 150, height: 150)
+                .rotationEffect(.degrees(ingredient.topping.rotated ? 90 : 0))
+        } else if let icon = ingredient.topping.icon {
+            Text(icon)
+                .font(.system(size: 60))
         }
     }
 
