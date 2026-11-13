@@ -193,10 +193,11 @@ struct IngredientDetailSheet: View {
                     }
                     .labelsHidden()
                     .pickerStyle(.menu)
+                    .fixedSize()
 
                     Text(":")
                         .font(.title3.bold())
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.primary)
 
                     Picker("Minutes", selection: $ingredient.minutes) {
                         ForEach(0..<60, id: \.self) { minute in
@@ -205,6 +206,7 @@ struct IngredientDetailSheet: View {
                     }
                     .labelsHidden()
                     .pickerStyle(.menu)
+                    .fixedSize()
                 }
                 .padding(.vertical, 10)
                 .padding(.horizontal, 12)
