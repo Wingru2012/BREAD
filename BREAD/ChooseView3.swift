@@ -15,7 +15,18 @@ struct Topping: Identifiable {
     var id: String { name }
 }
 
+/// An ingredient the user added to a plan, with their own name and study time.
+struct PlanIngredient: Identifiable {
+    let id = UUID()
+    let topping: Topping
+    var name: String
+    var hours: Int
+    var minutes: Int
+}
+
 struct ChooseView3: View {
+    /// Called with the finished ingredient when the user taps "Add".
+    var onAddIngredient: (PlanIngredient) -> Void = { _ in }
     @Environment(\.dismiss) private var dismiss
 
     let toppings: [Topping] = [
@@ -42,6 +53,8 @@ struct ChooseView3: View {
     ]
     
     @State private var selectedTopping: Topping?
+    // Set when "Add" is tapped so the whole picker (not just the sheet) closes
+    @State private var shouldDismissAfterSheet = false
     
     var body: some View {
         VStack(spacing: 0) {
@@ -106,14 +119,25 @@ struct ChooseView3: View {
                 .padding()
             }
         }
-        .sheet(item: $selectedTopping) { topping in
-            ToppingDetailSheet(topping: topping)
+        .sheet(item: $selectedTopping, onDismiss: {
+            // After the sheet closes, also close the picker to return to SelectView2
+            if shouldDismissAfterSheet {
+                shouldDismissAfterSheet = false
+                dismiss()
+            }
+        }) { topping in
+            ToppingDetailSheet(topping: topping) { ingredient in
+                onAddIngredient(ingredient)
+                shouldDismissAfterSheet = true
+            }
         }
     }
 }
 
 struct ToppingDetailSheet: View {
     let topping: Topping
+    /// Called with the finished ingredient when the user taps "Add".
+    var onAdd: (PlanIngredient) -> Void = { _ in }
     @Environment(\.dismiss) private var dismiss
 
     @State private var nameInput: String = ""
@@ -204,7 +228,16 @@ struct ToppingDetailSheet: View {
 
             // Native Apple prominent pill button
             Button {
-                // TODO: save nameInput, hours, minutes and add topping
+                // Use the typed name, falling back to the ingredient's own name
+                let trimmedName = nameInput.trimmingCharacters(in: .whitespacesAndNewlines)
+                let ingredient = PlanIngredient(
+                    topping: topping,
+                    name: trimmedName.isEmpty ? topping.name : trimmedName,
+                    hours: hours,
+                    minutes: minutes
+                )
+                // Add closes the sheet, then closes the picker back to SelectView2
+                onAdd(ingredient)
                 dismiss()
             } label: {
                 Text("Add")
