@@ -5,6 +5,7 @@ struct SelectView2: View {
     @State private var showChooseView3 = false
     /// Ingredient whose detail sheet is currently open
     @State private var selectedIngredient: PlanIngredient?
+    @State private var showTimer = false
 
     private let columns = [
         GridItem(.flexible(), spacing: 16),
@@ -60,7 +61,7 @@ struct SelectView2: View {
             Spacer()
             
             Button {
-                // TODO: start action
+                showTimer = true
             } label: {
                 Text("START")
                     .font(.title2.bold())
@@ -80,6 +81,9 @@ struct SelectView2: View {
             ChooseView3 { ingredient in
                 ingredients.append(ingredient)
             }
+        }
+        .fullScreenCover(isPresented: $showTimer) {
+            TimerView5(ingredients: ingredients)
         }
         .sheet(item: $selectedIngredient) { ingredient in
             // Bind straight into the array so edits show up in the grid instantly
