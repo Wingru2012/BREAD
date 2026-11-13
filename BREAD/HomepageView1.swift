@@ -1,8 +1,9 @@
+// homepage
 
 import SwiftUI
 
 struct StreakPetView: View {
-    let potatosize : CGFloat = 200
+    let potatosize: CGFloat = 200
     
     @AppStorage("streakDays") private var streakDays = 1
     @AppStorage("streakPet") private var streakPet = "potato normal"
@@ -12,34 +13,27 @@ struct StreakPetView: View {
             VStack(spacing: 16) {
 
                 ZStack {
-                   Image("\(streakPet)")
+                    Image("\(streakPet)")
                         .resizable()
                         .scaledToFit()
                         .frame(width: 400, height: 1000)
+                        .offset(x: 30)
                 }
                 .frame(maxWidth: .infinity)
                 .frame(height: 450)
 
                 Text("\(streakDays) days")
                     .font(.system(size: 48, weight: .medium))
-                    .foregroundColor(.brown)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(Color.brown, lineWidth: 4)
-                    )
+                    .foregroundColor(.black)
 
                 NavigationLink(destination: SelectView2()) {
                     Text("Start Plan")
                         .font(.title3)
-                        .foregroundColor(.brown)
+                        .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 24)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 35)
-                                .stroke(Color.brown, lineWidth: 5)
-                        )
+                        .background(Color.blue)
+                        .cornerRadius(35)
                 }
                 .padding(.horizontal, 20)
 
@@ -55,3 +49,9 @@ struct StreakPetView: View {
 #Preview {
     StreakPetView()
 }
+
+
+
+
+
+//2

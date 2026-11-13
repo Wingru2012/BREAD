@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct SelectView2: View {
+    @Environment(\.dismiss) private var dismiss
+
     @State private var ingredients: [PlanIngredient] = []
     @State private var showChooseView3 = false
     /// Ingredient whose detail sheet is currently open
@@ -14,28 +16,6 @@ struct SelectView2: View {
     
     var body: some View {
         VStack {
-            HStack {
-                Button {
-                    // TODO: go back
-                } label: {
-                    Image(systemName: "arrow.left")
-                        .font(.title3.bold())
-                }
-                
-                Spacer()
-                
-                Button {
-                    showChooseView3 = true
-                } label: {
-                    Image(systemName: "plus")
-                        .font(.title3.bold())
-                        .frame(width: 44, height: 44)
-                        .contentShape(Rectangle())
-                }
-            }
-            .padding(.horizontal)
-            .padding(.top)
-            
             // Ingredients added from ChooseView3
             ScrollView {
                 if ingredients.isEmpty {
@@ -77,6 +57,29 @@ struct SelectView2: View {
             .disabled(ingredients.isEmpty)
             .padding()
         }
+        .background(Color.white)
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button {
+                    dismiss()
+                } label: {
+                    Image(systemName: "chevron.left")
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.blue)
+                }
+            }
+
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    showChooseView3 = true
+                } label: {
+                    Image(systemName: "plus")
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.blue)
+                }
+            }
+        }
         .fullScreenCover(isPresented: $showChooseView3) {
             ChooseView3 { ingredient in
                 ingredients.append(ingredient)
@@ -102,9 +105,58 @@ struct IngredientCell: View {
     
     var body: some View {
         VStack(spacing: 8) {
-            ZStack(alignment: .topLeading) {
-                Rectangle()
-                    .fill(Color.white)
+            ZStack(alignment: .topTrailing) {
+                Button(action: onSelect) {
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(Color.white)
+                        .aspectRatio(1, contentMode: .fit)
+                        .overlay {
+                            if let assetName = ingredient.topping.assetName {
+                                Image(assetName)
+                                    .resizable()
+                                    .scaledToFit()
+                                    .padding(16)
+                                    .rotationEffect(.degrees(ingredient.topping.rotated ? 90 : 0))
+                            } else if let icon = ingredient.topping.icon {
+                                Text(icon)
+                                    .font(.system(size: 60))
+                                    .rotationEffect(.degrees(ingredient.topping.rotated ? 90 : 0))
+                            }
+                        }
+                        .overlay {
+                            RoundedRectangle(cornerRadius: 16)
+                                .strokeBorder(Color.gray.opacity(0.5), lineWidth: 2)
+                        }
+                }
+                .buttonStyle(.plain)
+                
+                Button(action: onDelete) {
+                    Image(systemName: "xmark")
+                        .font(.caption.bold())
+                        .foregroundStyle(.white)
+                        .frame(width: 26, height: 26)
+                        .background(Circle().fill(Color.red))
+                }
+                .offset(x: 10, y: -10)
+            }
+            
+            Text(ingredient.name)
+                .font(.subheadline)
+                .multilineTextAlignment(.center)
+                .foregroundStyle(.black)
+        }
+    }
+}
+
+/// Detail sheet for an added ingredient: picture on the left, editable name
+/// and study time on the right. Edits update the ingredient in SelectView2.
+struct IngredientDetailSheet: View {
+    @Binding var ingredient: PlanIngredient
+
+    var body: some View {
+            HStack(alignment: .center, spacing: 20) {
+                // Ingredient picture
+                Color.clear
                     .aspectRatio(1, contentMode: .fit)
                     .overlay {
                         if let assetName = ingredient.topping.assetName {
@@ -119,58 +171,7 @@ struct IngredientCell: View {
                                 .rotationEffect(.degrees(ingredient.topping.rotated ? 90 : 0))
                         }
                     }
-                    .clipShape(RoundedRectangle(cornerRadius: 16))
-                    .overlay {
-                        RoundedRectangle(cornerRadius: 16)
-                            .strokeBorder(Color.secondary.opacity(0.5), lineWidth: 2)
-                    }
-                
-                Button(action: onDelete) {
-                    Image(systemName: "xmark")
-                        .font(.caption.bold())
-                        .foregroundStyle(.white)
-                        .frame(width: 26, height: 26)
-                        .background(Circle().fill(Color.brown))
-                }
-                .padding(6)
-            }
-            
-            Text(ingredient.name)
-                .font(.subheadline)
-                .multilineTextAlignment(.center)
-                .foregroundStyle(.primary)
-        }
-        .contentShape(Rectangle())
-        // Tapping the cell opens the detail sheet; the X button above still wins
-        .onTapGesture(perform: onSelect)
-    }
-}
-
-/// Detail sheet for an added ingredient: picture on the left, editable name
-/// and study time on the right. Edits update the ingredient in SelectView2.
-struct IngredientDetailSheet: View {
-    @Binding var ingredient: PlanIngredient
-
-    var body: some View {
-        HStack(alignment: .center, spacing: 20) {
-            // Ingredient picture
-            RoundedRectangle(cornerRadius: 16)
-                .strokeBorder(Color.secondary.opacity(0.6), lineWidth: 3)
-                .aspectRatio(1, contentMode: .fit)
-                .overlay {
-                    if let assetName = ingredient.topping.assetName {
-                        Image(assetName)
-                            .resizable()
-                            .scaledToFit()
-                            .padding(16)
-                            .rotationEffect(.degrees(ingredient.topping.rotated ? 90 : 0))
-                    } else if let icon = ingredient.topping.icon {
-                        Text(icon)
-                            .font(.system(size: 60))
-                            .rotationEffect(.degrees(ingredient.topping.rotated ? 90 : 0))
-                    }
-                }
-                .frame(maxWidth: .infinity)
+                    .frame(maxWidth: .infinity)
 
             VStack(spacing: 16) {
                 // Name (editable, updates the grid instantly)
@@ -180,25 +181,19 @@ struct IngredientDetailSheet: View {
                     prompt: Text("name").foregroundStyle(.gray)
                 )
                 .font(.title3)
+                .foregroundStyle(.black)
                 .multilineTextAlignment(.center)
                 .padding(.vertical, 18)
                 .padding(.horizontal, 12)
-                .overlay {
-                    RoundedRectangle(cornerRadius: 12)
-                        .strokeBorder(Color.secondary.opacity(0.6), lineWidth: 3)
-                }
 
                 // Study time chosen in ChooseView3, shown read-only as XX h : XX m
                 Text("\(ingredient.hours) h : \(ingredient.minutes) m")
                     .font(.title3)
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(.black)
                     .padding(.vertical, 14)
                     .padding(.horizontal, 12)
                     .frame(maxWidth: .infinity)
-                    .overlay {
-                        RoundedRectangle(cornerRadius: 12)
-                            .strokeBorder(Color.secondary.opacity(0.6), lineWidth: 3)
-                    }
+
             }
             .frame(maxWidth: .infinity)
         }
@@ -210,5 +205,7 @@ struct IngredientDetailSheet: View {
 }
 
 #Preview {
-    SelectView2()
+    NavigationStack {
+        SelectView2()
+    }
 }
