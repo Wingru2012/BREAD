@@ -22,12 +22,12 @@ struct TimerView5: View {
     // Returns to the ingredient selection screen
     @Environment(\.dismiss) private var dismiss
     
-    /// Every ingredient added in SelectView2 — one tab each
+    // Every ingredient added in SelectView2 — one tab each
     var ingredients: [PlanIngredient]
     
     // PlatingView6 uses 100; scaled down here so the buttons still fit
     let emojiSize: CGFloat = 80
-    /// Vertical gap between stacked ingredients — small enough that each one
+    // Vertical gap between stacked ingredients — small enough that each one
     /// covers part of the ingredient below without hiding it completely
     let stackSpacing: CGFloat = 14
     /// How far each bread layer is pushed down to overlap the one below
@@ -58,8 +58,7 @@ struct TimerView5: View {
         NavigationStack {
             VStack(spacing: 12) {
                 
-                // Top bar: tab toggle on the left, back button next to it
-                // Top bar: blue Liquid Glass buttons
+                // Top bar: blue buttons with white background and gray outline
                 HStack(spacing: 12) {
                     // Folds / unfolds the ingredient tab strip
                     Button {
@@ -78,19 +77,11 @@ struct TimerView5: View {
                         .foregroundStyle(.blue)
                         .padding(.horizontal, 14)
                         .frame(height: 40)
-                        .background(.ultraThinMaterial, in: Capsule())
+                        .background(Color.white, in: Capsule())
                         .overlay {
                             Capsule()
-                                .strokeBorder(
-                                    LinearGradient(
-                                        colors: [.white.opacity(0.85), .blue.opacity(0.25)],
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    ),
-                                    lineWidth: 1
-                                )
+                                .strokeBorder(Color.gray.opacity(0.4), lineWidth: 1)
                         }
-                        .shadow(color: .black.opacity(0.06), radius: 8, x: 0, y: 4)
                         .contentShape(Capsule())
                     }
                     .buttonStyle(.plain)
@@ -103,19 +94,11 @@ struct TimerView5: View {
                             .font(.body.bold())
                             .foregroundStyle(.blue)
                             .frame(width: 40, height: 40)
-                            .background(.ultraThinMaterial, in: Circle())
+                            .background(Color.white, in: Circle())
                             .overlay {
                                 Circle()
-                                    .strokeBorder(
-                                        LinearGradient(
-                                            colors: [.white.opacity(0.85), .blue.opacity(0.25)],
-                                            startPoint: .topLeading,
-                                            endPoint: .bottomTrailing
-                                        ),
-                                        lineWidth: 1
-                                    )
+                                    .strokeBorder(Color.gray.opacity(0.4), lineWidth: 1)
                             }
-                            .shadow(color: .black.opacity(0.06), radius: 8, x: 0, y: 4)
                             .contentShape(Circle())
                     }
                     .buttonStyle(.plain)
@@ -124,6 +107,7 @@ struct TimerView5: View {
                     
                     Spacer()
                 }
+                
                 HStack(alignment: .top, spacing: 12) {
                     
                     if isTabsExpanded {
@@ -134,29 +118,30 @@ struct TimerView5: View {
                     VStack(spacing: 16) {
                         
                         // Time for the selected ingredient, counting down live
-                        HStack(spacing: 10) {
-                            timeUnit(hours, label: "hour")
-                            
-                            Text(":")
-                                .font(.system(size: 40, weight: .medium))
-                            
-                            timeUnit(minutes, label: "min")
-                            
-                            Text(":")
-                                .font(.system(size: 40, weight: .medium))
-                            
-                            timeUnit(seconds, label: "sec")
-                        }
-                        .foregroundColor(.brown)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 110)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 12)
-                                .stroke(Color.brown, lineWidth: 4)
-                        )
-                        .padding()
+                        // Time for the selected ingredient, counting down live
+                                                HStack(spacing: 10) {
+                                                    timeUnit(hours, label: "hour")
+                                                    
+                                                    Text(":")
+                                                        .font(.system(size: 36, weight: .light))
+                                                    
+                                                    timeUnit(minutes, label: "min")
+                                                    
+                                                    Text(":")
+                                                        .font(.system(size: 36, weight: .light))
+                                                    
+                                                    timeUnit(seconds, label: "sec")
+                                                }
+                                                .foregroundStyle(Color.black)
+                                                .frame(maxWidth: .infinity)
+                                                .frame(height: 106)
+                                                .background(Color.white, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+                                                
+                                                .padding(.horizontal, 4)
+                        
                         Spacer()
                         Spacer()
+                        
                         // Bread stack from PlatingView6 — finished ingredients
                         // drop onto the plate and stack up
                         VStack(spacing: -120) {
@@ -175,7 +160,7 @@ struct TimerView5: View {
                         .overlay(alignment: .bottom) {
                             // Every finished ingredient lands here, stacked
                             ZStack {
-                                ForEach(droppedIngredients) { ingredient in
+                                ForEach(droppedIngredients, id: \.id) { ingredient in
                                     ingredientView(for: ingredient)
                                         .offset(y: totalDropOffset(for: ingredient))
                                 }
@@ -184,15 +169,23 @@ struct TimerView5: View {
                         
                         VStack(spacing: 14) {
                             
-                            Button("Start") {
-                                startSelected()
+                            // Full-width blue pill play/pause toggle button
+                            Button {
+                                if selectedState.isRunning {
+                                    updateSelected { $0.isRunning = false }
+                                } else {
+                                    startSelected()
+                                }
+                            } label: {
+                                Image(systemName: selectedState.isRunning ? "pause.fill" : "play.fill")
+                                    .font(.title2.bold())
+                                    .foregroundStyle(.white)
+                                    .frame(maxWidth: .infinity, minHeight: 64)
+                                    .background(selectedState.remaining == 0 ? Color.gray : Color.blue)
+                                    .clipShape(Capsule())
                             }
-                            .disabled(selectedState.isRunning || selectedState.remaining == 0)
-                            
-                            Button("Cancel") {
-                                // Pause only — leave the time on screen untouched
-                                updateSelected { $0.isRunning = false }
-                            }
+                            .buttonStyle(.plain)
+                            .disabled(selectedState.remaining == 0)
                             
                             // Grey until every ingredient's timer has run out,
                             // then it turns blue and can be tapped
@@ -235,37 +228,45 @@ struct TimerView5: View {
     
     /// Vertical tab per added ingredient, showing its own countdown
     private var ingredientTabs: some View {
-        ScrollView {
+        ScrollView(showsIndicators: false) {
             VStack(spacing: 12) {
-                ForEach(ingredients) { ingredient in
-                    let state = state(for: ingredient.id)
-                    let isSelected = ingredient.id == selectedID
-                    
-                    Button {
-                        select(ingredient.id)
-                    } label: {
-                        VStack(spacing: 4) {
-                            tabImage(for: ingredient)
-                                .frame(width: 52, height: 52)
-                                .overlay {
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .stroke(isSelected ? Color.brown : Color.gray.opacity(0.4),
-                                                lineWidth: isSelected ? 3 : 2)
-                                }
-                            
-                            Text(shortTime(state.remaining))
-                                .font(.caption2)
-                                .monospacedDigit()
-                                .foregroundColor(state.remaining == 0 ? .gray : .brown)
-                        }
-                        .padding(4)
-                    }
-                    .buttonStyle(.plain)
+                ForEach(ingredients, id: \.id) { ingredient in
+                    ingredientTabButton(for: ingredient)
                 }
             }
             .padding(.vertical, 4)
         }
-        .frame(width: 72)
+        .frame(width: 68)
+    }
+    
+    @ViewBuilder
+    private func ingredientTabButton(for ingredient: PlanIngredient) -> some View {
+        let currentState = state(for: ingredient.id)
+        let isSelected = ingredient.id == selectedID
+        
+        Button {
+            select(ingredient.id)
+        } label: {
+            VStack(spacing: 5) {
+                tabImage(for: ingredient)
+                    .frame(width: 54, height: 54)
+                    .background(Color.white, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .strokeBorder(
+                                isSelected ? Color.gray : Color.gray.opacity(0.4),
+                                lineWidth: isSelected ? 2 : 1
+                            )
+                    }
+                
+                Text(shortTime(currentState.remaining))
+                    .font(.caption2.weight(isSelected ? .semibold : .regular))
+                    .monospacedDigit()
+                    .foregroundStyle(Color.gray)
+            }
+            .padding(2)
+        }
+        .buttonStyle(.plain)
     }
     
     @ViewBuilder
@@ -415,7 +416,7 @@ struct TimerView5: View {
     
     /// Drop animation (from above) plus the ingredient's stacking position
     private func totalDropOffset(for ingredient: PlanIngredient) -> CGFloat {
-        (timers[ingredient.id]?.dropOffset ?? 0) + stackOffset(for: ingredient) - ingredientBaseOffset - 10
+        (timers[ingredient.id]?.dropOffset ?? 0) + stackOffset(for: ingredient) - ingredientBaseOffset
     }
     
     /// One ingredient's artwork, using the "s" plating asset where there is one
