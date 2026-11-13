@@ -3,20 +3,19 @@ import SwiftUI
 
 struct StreakPetView: View {
     let potatosize : CGFloat = 200
-    @State private var streakDays = 1
     
     @AppStorage("streakDays") private var streakDays = 1
+    @AppStorage("streakPet") private var streakPet = "potato normal"
 
     var body: some View {
         NavigationStack {
             VStack(spacing: 16) {
 
                 ZStack {
-                   Text("🥔")
-                .font(.system(size: potatosize))
-                       // .resizable()
+                   Image("\(streakPet)")
+                        .resizable()
                         .scaledToFit()
-                        .frame(width: 280, height: 450)
+                        .frame(width: 400, height: 1000)
                 }
                 .frame(maxWidth: .infinity)
                 .frame(height: 450)
