@@ -82,37 +82,20 @@ struct UpdateView7: View {
 
     @ViewBuilder
     private var sandwichStack: some View {
-        VStack(spacing: -23) {
-            Image("bread up")
-                .resizable()
-                .scaledToFit()
-                .zIndex(3)
-
-            ZStack {
-                ForEach(ingredients) { ingredient in
-                    updateIngredientView(for: ingredient)
-                        .offset(y: updateStackOffset(for: ingredient))
-                        .zIndex(2)
-                }
-            }
-
+        VStack(spacing: -40) {
             Image("bread up")
                 .resizable()
                 .scaledToFit()
                 .zIndex(1)
 
-            Image("plate")
+            Image("bread up")
                 .resizable()
                 .scaledToFit()
-                .offset(y: -25)
                 .zIndex(0)
+
         }
     }
 
-    private func updateStackOffset(for ingredient: PlanIngredient) -> CGFloat {
-        guard let index = ingredients.firstIndex(where: { $0.id == ingredient.id }) else { return 0 }
-        return -CGFloat(index) * 14 
-    }
 
     @ViewBuilder
     private func updateIngredientView(for ingredient: PlanIngredient) -> some View {
