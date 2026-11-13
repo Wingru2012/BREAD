@@ -13,10 +13,12 @@ struct UpdateView7: View {
     let totalBites = 4
 
     @AppStorage("streakDays") private var streakDays = 1
+    @AppStorage("streakPet") private var streakPet = "potato"
 
     @State private var bitesTaken = 0
     @State private var isChomping = false
     @State private var hasGulped = false
+    @State private var petStatus = "eat"
     var sandwichLeft: CGFloat {
         CGFloat(totalBites - bitesTaken) / CGFloat(totalBites)
     }
@@ -24,10 +26,10 @@ struct UpdateView7: View {
     var body: some View {
         VStack {
             HStack {
-                Image("StreakPet")
+                Image("\(streakPet) \(petStatus)")
                     .resizable()
                     .scaledToFit()
-                    .frame(height: petSize)
+                    .font(.system(size: petSize))
                     .scaleEffect(x: isChomping ? 1.15 : 1,
                                  y: isChomping ? 0.75 : 1,
                                  anchor: .bottom)
@@ -40,7 +42,7 @@ struct UpdateView7: View {
                         Rectangle()
                             .scaleEffect(x: sandwichLeft, anchor: .trailing)
                     }
-                    .offset(x: -16 * CGFloat(bitesTaken))
+                    .offset(x: -67 * CGFloat(bitesTaken))
             }
             Text("\(streakDays) Days")
                 .font(.largeTitle)
@@ -66,6 +68,8 @@ struct UpdateView7: View {
             withAnimation(.interpolatingSpring(stiffness: 120, damping: 6)) {
                 hasGulped = true
             }
+            petStatus = "happy"
+            
 
             // Finished the sandwich — the streak goes up!
             streakDays += 1
