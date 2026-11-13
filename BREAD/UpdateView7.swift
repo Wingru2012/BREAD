@@ -82,25 +82,30 @@ struct UpdateView7: View {
 
     @ViewBuilder
     private var sandwichStack: some View {
-        VStack(spacing: -20) {
+        VStack(spacing: -23) {
             Image("bread up")
                 .resizable()
                 .scaledToFit()
+                .zIndex(3)
 
             ZStack {
                 ForEach(ingredients) { ingredient in
                     updateIngredientView(for: ingredient)
                         .offset(y: updateStackOffset(for: ingredient))
+                        .zIndex(2)
                 }
             }
 
             Image("bread up")
                 .resizable()
                 .scaledToFit()
+                .zIndex(1)
 
             Image("plate")
                 .resizable()
                 .scaledToFit()
+                .offset(y: -25)
+                .zIndex(0)
         }
     }
 
