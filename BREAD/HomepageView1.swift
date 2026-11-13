@@ -22,7 +22,7 @@ struct StreakPetView: View {
                 .frame(maxWidth: .infinity)
                 .frame(height: 450)
 
-                Text("\(streakDays) days")
+                Text("🔥\(streakDays)")
                     .font(.system(size: 48, weight: .medium))
                     .foregroundColor(.black)
 
