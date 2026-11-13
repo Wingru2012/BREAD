@@ -8,10 +8,11 @@
 import SwiftUI
 
 struct UpdateView7: View {
-    let potatoSize: CGFloat = 200
+    let petSize: CGFloat = 200
     let sandwichSize: CGFloat = 100
     let totalBites = 4
 
+    @AppStorage("streakDays") private var streakDays = 1
 
     @State private var bitesTaken = 0
     @State private var isChomping = false
@@ -23,8 +24,10 @@ struct UpdateView7: View {
     var body: some View {
         VStack {
             HStack {
-                Text("🥔")
-                    .font(.system(size: potatoSize))
+                Image("StreakPet")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(height: petSize)
                     .scaleEffect(x: isChomping ? 1.15 : 1,
                                  y: isChomping ? 0.75 : 1,
                                  anchor: .bottom)
@@ -39,7 +42,7 @@ struct UpdateView7: View {
                     }
                     .offset(x: -16 * CGFloat(bitesTaken))
             }
-            Text("Days")
+            Text("\(streakDays) Days")
                 .font(.largeTitle)
         }
         .onAppear {
@@ -63,6 +66,9 @@ struct UpdateView7: View {
             withAnimation(.interpolatingSpring(stiffness: 120, damping: 6)) {
                 hasGulped = true
             }
+
+            // Finished the sandwich — the streak goes up!
+            streakDays += 1
         }
     }
 }

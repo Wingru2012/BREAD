@@ -56,7 +56,7 @@ struct PlatingView6: View {
             withAnimation(.interpolatingSpring(stiffness: 40, damping: 10).delay(0.3)) {
                 topBreadOffset = 0
             }
-            // Reveal FEED! just after the bread lands on the stack
+
             withAnimation(.easeOut(duration: 0.4).delay(1.2)) {
                 isFeedButtonVisible = true
             }

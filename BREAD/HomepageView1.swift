@@ -2,7 +2,7 @@
 import SwiftUI
 
 struct StreakPetView: View {
-    @State private var streakDays = 1
+    @AppStorage("streakDays") private var streakDays = 1
 
     var body: some View {
         NavigationStack {
