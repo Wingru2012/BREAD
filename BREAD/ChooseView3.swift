@@ -144,6 +144,12 @@ struct ToppingDetailSheet: View {
     @State private var hours: Int = 0
     @State private var minutes: Int = 0
 
+    /// A name must be typed and the time must be at least one minute
+    private var canAdd: Bool {
+        let trimmedName = nameInput.trimmingCharacters(in: .whitespacesAndNewlines)
+        return !trimmedName.isEmpty && (hours * 60 + minutes) > 0
+    }
+
     var body: some View {
         VStack(spacing: 20) {
             Spacer()
@@ -228,11 +234,10 @@ struct ToppingDetailSheet: View {
 
             // Native Apple prominent pill button
             Button {
-                // Use the typed name, falling back to the ingredient's own name
                 let trimmedName = nameInput.trimmingCharacters(in: .whitespacesAndNewlines)
                 let ingredient = PlanIngredient(
                     topping: topping,
-                    name: trimmedName.isEmpty ? topping.name : trimmedName,
+                    name: trimmedName,
                     hours: hours,
                     minutes: minutes
                 )
@@ -248,6 +253,7 @@ struct ToppingDetailSheet: View {
             .buttonStyle(.borderedProminent)
             .buttonBorderShape(.capsule)
             .controlSize(.large)
+            .disabled(!canAdd)
             .padding(.horizontal)
             .padding(.bottom, 16)
         }

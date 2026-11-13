@@ -184,36 +184,17 @@ struct IngredientDetailSheet: View {
                         .strokeBorder(Color.secondary.opacity(0.6), lineWidth: 3)
                 }
 
-                // Study time: XX h : XX m
-                HStack(spacing: 6) {
-                    Picker("Hours", selection: $ingredient.hours) {
-                        ForEach(0..<24, id: \.self) { hour in
-                            Text("\(hour) h").tag(hour)
-                        }
+                // Study time chosen in ChooseView3, shown read-only as XX h : XX m
+                Text("\(ingredient.hours) h : \(ingredient.minutes) m")
+                    .font(.title3)
+                    .foregroundStyle(.primary)
+                    .padding(.vertical, 14)
+                    .padding(.horizontal, 12)
+                    .frame(maxWidth: .infinity)
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 12)
+                            .strokeBorder(Color.secondary.opacity(0.6), lineWidth: 3)
                     }
-                    .labelsHidden()
-                    .pickerStyle(.menu)
-                    .fixedSize()
-
-                    Text(":")
-                        .font(.title3.bold())
-                        .foregroundStyle(.primary)
-
-                    Picker("Minutes", selection: $ingredient.minutes) {
-                        ForEach(0..<60, id: \.self) { minute in
-                            Text("\(minute) m").tag(minute)
-                        }
-                    }
-                    .labelsHidden()
-                    .pickerStyle(.menu)
-                    .fixedSize()
-                }
-                .padding(.vertical, 10)
-                .padding(.horizontal, 12)
-                .overlay {
-                    RoundedRectangle(cornerRadius: 12)
-                        .strokeBorder(Color.secondary.opacity(0.6), lineWidth: 3)
-                }
             }
             .frame(maxWidth: .infinity)
         }

@@ -11,7 +11,8 @@ import SwiftUI
 struct BREADApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            // Launch straight into the ingredient grid
+            SelectView2()
         }
     }
 }
