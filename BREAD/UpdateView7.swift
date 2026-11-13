@@ -6,11 +6,13 @@
 //
 
 import SwiftUI
+import UIKit
 
 struct UpdateView7: View {
     let petSize: CGFloat = 200
     let sandwichSize: CGFloat = 100
     let totalBites = 4
+    var ingredients: [PlanIngredient] = []
 
     @AppStorage("streakDays") private var streakDays = 1
     @AppStorage("streakPet") private var streakPet = "potato"
@@ -36,8 +38,8 @@ struct UpdateView7: View {
                     .scaleEffect(hasGulped ? 1.15 : 1)
                     .offset(x: isChomping ? 14 : 0)
                 
-                Text("🥪")
-                    .font(.system(size: sandwichSize))
+                sandwichStack
+                    .frame(width: sandwichSize, height: sandwichSize)
                     .mask {
                         Rectangle()
                             .scaleEffect(x: sandwichLeft, anchor: .trailing)
@@ -74,6 +76,65 @@ struct UpdateView7: View {
             // Finished the sandwich — the streak goes up!
             streakDays += 1
         }
+    }
+
+    // MARK: - Sandwich
+
+    @ViewBuilder
+    private var sandwichStack: some View {
+        VStack(spacing: -20) {
+            Image("bread up")
+                .resizable()
+                .scaledToFit()
+
+            ZStack {
+                ForEach(ingredients) { ingredient in
+                    updateIngredientView(for: ingredient)
+                        .offset(y: updateStackOffset(for: ingredient))
+                }
+            }
+
+            Image("bread up")
+                .resizable()
+                .scaledToFit()
+
+            Image("plate")
+                .resizable()
+                .scaledToFit()
+        }
+    }
+
+    private func updateStackOffset(for ingredient: PlanIngredient) -> CGFloat {
+        guard let index = ingredients.firstIndex(where: { $0.id == ingredient.id }) else { return 0 }
+        return -CGFloat(index) * 14 
+    }
+
+    @ViewBuilder
+    private func updateIngredientView(for ingredient: PlanIngredient) -> some View {
+        if let assetName = updateAssetName(for: ingredient.topping) {
+            Image(assetName)
+                .resizable()
+                .scaledToFit()
+                .frame(width: sandwichSize * 0.6, height: sandwichSize * 0.6)
+                .rotationEffect(.degrees(ingredient.topping.rotated ? 90 : 0))
+        } else if let icon = ingredient.topping.icon {
+            Text(icon)
+                .font(.system(size: sandwichSize * 0.4))
+        }
+    }
+
+    private func updateAssetName(for topping: Topping) -> String? {
+        guard let name = topping.assetName else { return nil }
+        guard name.hasSuffix(" i") else { return name }
+
+        let smallName = String(name.dropLast(2)) + " s"
+        if UIImage(named: smallName) != nil {
+            return smallName
+        }
+        if UIImage(named: smallName + " ") != nil {
+            return smallName + " "
+        }
+        return name
     }
 }
 

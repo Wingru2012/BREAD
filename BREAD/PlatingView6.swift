@@ -6,36 +6,52 @@
 //
 
 import SwiftUI
+import UIKit
 
 struct PlatingView6: View {
-    let emojiSize: CGFloat = 100
-    
+    var ingredients: [PlanIngredient] = []
+
     @State private var topBreadOffset: CGFloat = -500
-    // FEED! fades in once the top bread has landed
     @State private var isFeedButtonVisible = false
-    // True after FEED! is tapped — swaps the plate out for UpdateView7
     @State private var isFeeding = false
 
     var body: some View {
         ZStack {
             if isFeeding {
-                UpdateView7()
+                UpdateView7(ingredients: ingredients)
                     .transition(.opacity)
             } else {
-                VStack(spacing: 40) {
-                    VStack {
-                        Text("🍞")
-                            .font(.system(size: emojiSize))
-                            .rotationEffect(.degrees(270))
+                VStack(spacing: -40) {
+                    VStack(spacing: -167) {
+                        // 1. Top bread dropping down
+                        Image("bread up")
+                            .resizable()
+                            .scaledToFit()
                             .offset(y: topBreadOffset)
-                        Text("🥗")
-                            .font(.system(size: emojiSize))
-                        Text("🍞")
-                            .font(.system(size: emojiSize))
-                            .rotationEffect(.degrees(90))
-                        Text("🍽️")
-                            .font(.system(size: emojiSize))
+                            .zIndex(3) // Drawn at the very top
+
+                        // 2. Dropped toppings stacked on the bread
+                        ZStack {
+                            ForEach(ingredients) { ingredient in
+                                platingIngredientView(for: ingredient)
+                                    .offset(y: platingStackOffset(for: ingredient))
+                            }
+                        }
+                        .zIndex(2) // Drawn above the bottom bread
+
+                        // 3. Bottom bread
+                        Image("bread up")
+                            .resizable()
+                            .scaledToFit()
+                            .zIndex(1) // Drawn above the plate
+
+                        // 4. Plate at the base
+                        Image("plate")
+                            .resizable()
+                            .scaledToFit()
+                            .zIndex(0) // Drawn at the very bottom layer
                     }
+                    .padding(24)
 
                     Button("FEED!") {
                         withAnimation(.easeInOut(duration: 0.3)) {
@@ -62,8 +78,50 @@ struct PlatingView6: View {
             }
         }
     }
-}
+
+    // MARK: - Pieces
+
+    /// Stacking offset so toppings overlap slightly on the bread
+    private func platingStackOffset(for ingredient: PlanIngredient) -> CGFloat {
+        guard let index = ingredients.firstIndex(where: { $0.id == ingredient.id }) else { return 0 }
+        return -CGFloat(index) * 14
+    }
+
+    @ViewBuilder
+    private func platingIngredientView(for ingredient: PlanIngredient) -> some View {
+        if let assetName = platingAssetName(for: ingredient.topping) {
+            Image(assetName)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 180, height: 180)
+                .rotationEffect(.degrees(ingredient.topping.rotated ? 90 : 0))
+        } else if let icon = ingredient.topping.icon {
+            Text(icon)
+                .font(.system(size: 60))
+        }
+    }
+
+    /// The "s" artwork rather than the "i" selection photo
+    private func platingAssetName(for topping: Topping) -> String? {
+        guard let name = topping.assetName else { return nil }
+        guard name.hasSuffix(" i") else { return name }
+
+        let smallName = String(name.dropLast(2)) + " s"
+        if UIImage(named: smallName) != nil {
+            return smallName
+        }
+        if UIImage(named: smallName + " ") != nil {
+            return smallName + " "
+        }
+        return name
+    }
+} // <-- Restored missing closing brace for PlatingView6 struct
 
 #Preview {
-    PlatingView6()
+    PlatingView6(ingredients: [
+        PlanIngredient(topping: Topping(name: "Tomato", assetName: "tomato i"),
+                       name: "Tomato", hours: 0, minutes: 1),
+        PlanIngredient(topping: Topping(name: "Mayo", assetName: "mayo i"),
+                       name: "Mayo", hours: 1, minutes: 0),
+    ])
 }

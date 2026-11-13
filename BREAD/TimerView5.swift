@@ -14,7 +14,7 @@ private struct IngredientTimer {
     var remaining: Int
     var isRunning = false
     var hasDropped = false
-    var dropOffset: CGFloat = -600
+    var dropOffset: CGFloat = -100
 }
 
 struct TimerView5: View {
@@ -130,14 +130,16 @@ struct TimerView5: View {
                             RoundedRectangle(cornerRadius: 12)
                                 .stroke(Color.brown, lineWidth: 4)
                         )
-
+                        .padding()
+                        Spacer()
+                        Spacer()
                         // Bread stack from PlatingView6 — finished ingredients
                         // drop onto the plate and stack up
-                        VStack(spacing: 0) {
+                        VStack(spacing: -120) {
 
                             Image("bread up")
                                 .resizable()
-                                .offset(y: breadOverlap)
+                                .scaledToFit()
                                 .zIndex(1)
 
                             Image("plate")
@@ -197,7 +199,7 @@ struct TimerView5: View {
             .background(Color.white)
             .toolbar(.hidden, for: .navigationBar)
             .navigationDestination(isPresented: $showPlating) {
-                PlatingView6()
+                PlatingView6(ingredients: droppedIngredients)
             }
             .onReceive(timer) { _ in
                 tick()
@@ -389,7 +391,7 @@ struct TimerView5: View {
 
     /// Drop animation (from above) plus the ingredient's stacking position
     private func totalDropOffset(for ingredient: PlanIngredient) -> CGFloat {
-        (timers[ingredient.id]?.dropOffset ?? 0) + stackOffset(for: ingredient) - ingredientBaseOffset
+        (timers[ingredient.id]?.dropOffset ?? 0) + stackOffset(for: ingredient) - ingredientBaseOffset - 10
     }
 
     /// One ingredient's artwork, using the "s" plating asset where there is one
